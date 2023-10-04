@@ -2,12 +2,16 @@
 
 MODEL_DIR=${MODEL/\//_}
 
+[ -f "/app/${TUNNEL_KEY_NAME}" ] || \
+  cp "/app/ssh-mount/${TUNNEL_KEY_NAME}" /app/ \
+  && chmod 400 "/app/${TUNNEL_KEY_NAME}"
+
 echo Connecting to ${TUNNEL_SERVER}...
 
 ssh -f -N -T \
   -o StrictHostKeyChecking=no \
   -R ${TUNNEL_REMOTE_PORT}:localhost:${OPENEDAI_PORT} \
-  -i "/app/ssh-mount/${TUNNEL_KEY_NAME}" \
+  -i "/app/${TUNNEL_KEY_NAME}" \
   ${TUNNEL_SERVER}
 RET_SSH=$?
 

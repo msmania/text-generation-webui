@@ -1,4 +1,5 @@
 FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+ARG TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-3.5;5.0;6.0;6.1;7.0;7.5;8.0;8.6+PTX}"
 
 LABEL maintainer="Toshihito Kikuchi <toshi@c0d3r.org>"
 LABEL description="Docker image for Text Generation RPC"
@@ -22,15 +23,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,rw apt-get update &&
 
 RUN --mount=type=cache,target=/root/.cache/pip,rw pip3 install virtualenv
 
-RUN test -n "${WEBUI_VERSION}" && git reset --hard HEAD || \
-    echo "Using provided webui source"
-
 # Create virtualenv
 RUN virtualenv /app/venv
 RUN --mount=type=cache,target=/root/.cache/pip,rw \
     . /app/venv/bin/activate && \
     pip3 install --upgrade pip setuptools wheel && \
-    pip3 install torch torchvision torchaudio sentence_transformers xformers
+    pip3 install torch==2.1.0 torchvision torchaudio sentence_transformers && \
+    pip3 install xformers
 
 # Install main requirements
 RUN --mount=type=cache,target=/root/.cache/pip,rw \
