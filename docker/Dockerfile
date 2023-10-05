@@ -11,6 +11,7 @@ ENV TUNNEL_KEY_NAME=""
 ENV CLI_ARGS=""
 
 VOLUME /app/ssh-mount
+VOLUME /app/models
 
 RUN mkdir /app
 WORKDIR /app
@@ -47,11 +48,11 @@ RUN --mount=type=cache,target=/root/.cache/pip,rw \
     pip3 install -r requirements.txt; \
     done
 
-EXPOSE ${CONTAINER_API_PORT:-5000} \
-    ${CONTAINER_API_STREAM_PORT:-5005} \
-    ${OPENEDAI_PORT}
 CMD . /app/venv/bin/activate && \
     ./start_rpc_server.sh \
+    --api \
+    --api-blocking-port ${CONTAINER_API_PORT:-5000} \
+    --api-streaming-port ${CONTAINER_API_STREAM_PORT:-5005} \
     --extension openai \
     --listen \
     --trust-remote-code \
