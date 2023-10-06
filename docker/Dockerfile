@@ -5,8 +5,10 @@ LABEL maintainer="Toshihito Kikuchi <toshi@c0d3r.org>"
 LABEL description="Docker image for Text Generation RPC"
 
 ENV MODEL=""
-ENV TUNNEL_SERVER=""
-ENV TUNNEL_REMOTE_PORT=""
+ENV TUNNEL_SERVER_RPC=""
+ENV TUNNEL_REMOTE_PORT_RPC=""
+ENV TUNNEL_SERVER_STREAM=""
+ENV TUNNEL_REMOTE_PORT_STREAM=""
 ENV TUNNEL_KEY_NAME=""
 ENV CLI_ARGS=""
 
