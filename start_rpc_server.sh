@@ -6,43 +6,20 @@ MODEL_DIR=${MODEL/\//_}
   cp "/app/ssh-mount/${TUNNEL_KEY_NAME}" /app/ \
   && chmod 400 "/app/${TUNNEL_KEY_NAME}"
 
-if [[ "${TUNNEL_REMOTE_PORT_RPC}" != "" ]]; then
-  echo Connecting to ${TUNNEL_SERVER_RPC}...
+[ -f "/app/${TUNNEL_SERVER_PUBKEY}" ] || \
+  cp "/app/ssh-mount/${TUNNEL_SERVER_PUBKEY}" /app/ \
+  && chmod 400 "/app/${TUNNEL_SERVER_PUBKEY}"
 
-  ssh -f -N -T \
-    -o StrictHostKeyChecking=no \
-    -R ${TUNNEL_REMOTE_PORT_RPC}:localhost:${OPENEDAI_PORT:-5001} \
-    -i "/app/${TUNNEL_KEY_NAME}" \
-    ${TUNNEL_SERVER_RPC}
-  RET_SSH=$?
-
-  if [ ${RET_SSH} -ne 0 ]; then
-    echo Cannot establish the channel to ${TUNNEL_SERVER_RPC}
-    tail -f /dev/null
-  fi
-
-  echo Established the channel to ${TUNNEL_SERVER_RPC}
+if [[ "${TUNNEL_SERVER_ENDPOINT}" != "" ]]; then
+  echo Connecting to ${TUNNEL_SERVER_ENDPOINT}...
+  /app/kinesisd -c \
+    "/app/${TUNNEL_KEY_NAME}" \
+    "/app/${TUNNEL_SERVER_PUBKEY}" \
+    ${TUNNEL_SERVER_ENDPOINT} \
+    ${TUNNEL_LOCAL_ENDPOINT} &
 fi
 
-if [[ "${TUNNEL_REMOTE_PORT_STREAM}" != "" ]]; then
-  echo Connecting to ${TUNNEL_SERVER_STREAM}...
-
-  ssh -f -N -T \
-    -o StrictHostKeyChecking=no \
-    -R ${TUNNEL_REMOTE_PORT_STREAM}:localhost:${CONTAINER_API_STREAM_PORT:-5005} \
-    -i "/app/${TUNNEL_KEY_NAME}" \
-    ${TUNNEL_SERVER_STREAM}
-  RET_SSH=$?
-
-  if [ ${RET_SSH} -ne 0 ]; then
-    echo Cannot establish the channel to ${TUNNEL_SERVER_STREAM}
-    tail -f /dev/null
-  fi
-
-  echo Established the channel to ${TUNNEL_SERVER_STREAM}
-fi
-
-if [[ "${MODEL}" == "NULL" ]]; then
+if [[ "${MODEL}" == "" ]]; then
   tail -f /dev/null
 fi
 
