@@ -1,3 +1,4 @@
 # Only used by the one-click installer.
 # Example:
 # --listen --api
+--listen --api --nowebui --extensions=openai --trust-remote-code --load-in-4bit

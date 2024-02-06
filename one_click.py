@@ -1,6 +1,7 @@
 import argparse
 import glob
 import hashlib
+import importlib
 import os
 import platform
 import re
@@ -8,6 +9,8 @@ import signal
 import site
 import subprocess
 import sys
+
+from modules import shared
 
 script_dir = os.getcwd()
 conda_env_path = os.path.join(script_dir, "installer_files", "env")
@@ -386,6 +389,31 @@ if __name__ == "__main__":
             model_dir = [flags_list[(flags_list.index(flag) + 1)] for flag in flags_list if flag == '--model-dir'][0].strip('"\'')
         else:
             model_dir = 'models'
+
+        downloader = importlib.import_module("download-model") \
+            .ModelDownloader()
+        model, branch = downloader.sanitize_model_and_branch_names(
+            shared.args.model.replace("_", "/"), None)
+        links, sha256, is_lora, is_llamacpp = \
+            downloader.get_download_links_from_huggingface(
+                model, branch, text_only=False, specific_file=None)
+        output_folder = downloader.get_output_folder(
+            model,
+            branch,
+            is_lora,
+            is_llamacpp=is_llamacpp,
+            base_folder=model_dir)
+        if not os.path.exists(output_folder):
+            print(f"Start downloading {shared.args.model} to {output_folder}...")
+            downloader.download_model_files(
+                model,
+                branch,
+                links,
+                sha256,
+                output_folder,
+                specific_file=None,
+                threads=4,
+                is_llamacpp=is_llamacpp)
 
         if len([item for item in glob.glob(f'{model_dir}/*') if not item.endswith(('.txt', '.yaml'))]) == 0:
             print_big_message("WARNING: You haven't downloaded any model yet.\nOnce the web UI launches, head over to the \"Model\" tab and download one.")
